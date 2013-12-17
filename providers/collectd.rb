@@ -27,9 +27,13 @@ action :install do
 		notifies :run, "bash[setup]"
 	end
 
+	hostname = new_resource.hostname != "" ? "--hostname #{new_resource.hostname}" : ""
+	wormlyhost = new_resource.wormlyhost != "" ? "--wormlyhost #{new_resource.wormlyhost}" : ""
+	hostid = new_resource.hostid != "" ? "--hostid #{new_resource.hostid}" : ""
+
 	bash "setup" do
 		code <<EOF
-echo #{new_resource.apikey} | wormly-collectd-setup
+wormly-collectd-setup --key #{new_resource.apikey} #{hostname} #{wormlyhost} #{hostid}
 service collectd restart
 EOF
 		action :nothing

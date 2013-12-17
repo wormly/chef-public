@@ -4,6 +4,10 @@ default_action :install
 
 attribute :apikey, :kind_of => String, :name_attribute => true
 
+attribute :hostname, :kind_of => String, :default => ""
+attribute :hostid, :kind_of => String, :default => ""
+attribute :wormlyhost, :kind_of => String, :default => ""
+
 attribute :yumrepo, :kind_of => String, :default => "https://wormly-rpm.s3.amazonaws.com/"
 attribute :keyurl, :kind_of => String, :default => "https://wormly-rpm.s3.amazonaws.com/public.gpg"
 
