@@ -15,8 +15,13 @@ action :install do
 			url new_resource.keyurl
 		end
 
+		# todo: use $releasever? is it present in all yums?
+		el = IO.read("/proc/version").include?("el6") ? "el6" : "el5"
+
+		yumrepo = new_resource.yumrepo.sub("$el", el)
+
 		yum_repository 'wormly' do
-			url new_resource.yumrepo
+			url yumrepo
 			repo_name 'wormly'
 			description 'Home for wormly-collectd package'
 			key keyname
