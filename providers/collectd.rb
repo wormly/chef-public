@@ -25,6 +25,8 @@ action :install do
 			repo_name 'wormly'
 			description 'Home for wormly-collectd package'
 			key keyname
+			includepkgs "wormly-collectd collectd"
+			priority 5
 		end
 	end
 
