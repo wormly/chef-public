@@ -34,13 +34,21 @@ action :install do
 		notifies :run, "bash[setup]"
 	end
 
-	hostname = new_resource.hostname != "" ? "--hostname #{new_resource.hostname}" : ""
-	wormlyhost = new_resource.wormlyhost != "" ? "--wormlyhost #{new_resource.wormlyhost}" : ""
-	hostid = new_resource.hostid != "" ? "--hostid #{new_resource.hostid}" : ""
+	command = "wormly-collectd-setup --key #{new_resource.apikey}"
+
+	values = new_resource.to_hash
+
+	%w{hostname wormlyhost hostid mysqluser mysqlpassword mysqlhost mysqlport mysqlsocket}.each do |name|
+		value = values[name.to_sym]
+
+		next if value == ""
+
+		command += " --#{name} #{value}"
+	end
 
 	bash "setup" do
 		code <<EOF
-wormly-collectd-setup --key #{new_resource.apikey} #{hostname} #{wormlyhost} #{hostid}
+#{command}
 service collectd restart
 EOF
 		action :nothing

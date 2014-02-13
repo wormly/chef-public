@@ -4,7 +4,7 @@ maintainer       "Wormly"
 maintainer_email "cookbooks@wormly.com"
 license          "MIT"
 description      "Adds repos, installs wormly-collectd"
-version          "0.0.1"
+version          "0.0.2"
 
 depends "apt"
 depends "yum"

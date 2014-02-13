@@ -8,6 +8,12 @@ attribute :hostname, :kind_of => String, :default => ""
 attribute :hostid, :kind_of => String, :default => ""
 attribute :wormlyhost, :kind_of => String, :default => ""
 
+attribute :mysqlpassword, :kind_of => String, :default => ""
+attribute :mysqluser, :kind_of => String, :default => ""
+attribute :mysqlhost, :kind_of => String, :default => ""
+attribute :mysqlsocket, :kind_of => String, :default => ""
+attribute :mysqlport, :kind_of => String, :default => ""
+
 attribute :yumrepo, :kind_of => String, :default => "https://wormly-rpm.s3.amazonaws.com/$el/"
 attribute :keyurl, :kind_of => String, :default => "https://wormly-rpm.s3.amazonaws.com/public.gpg"
 
