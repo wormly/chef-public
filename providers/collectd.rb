@@ -41,7 +41,7 @@ action :install do
 	%w{hostname wormlyhost hostid mysqluser mysqlpassword mysqlhost mysqlport mysqlsocket}.each do |name|
 		value = values[name.to_sym]
 
-		next if value == ""
+		next if value == "" or value == nil
 
 		command += " --#{name} #{value}"
 	end
