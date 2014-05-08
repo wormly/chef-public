@@ -3,7 +3,7 @@ action :install do
 	if platform_family?("debian")
 		apt_repository 'wormly' do
 			uri          new_resource.aptrepo
-			distribution 'production'
+			distribution 'all'
 			components   ['main']
 			keyserver	 'keyserver.ubuntu.com'
 			key	         new_resource.keyid
