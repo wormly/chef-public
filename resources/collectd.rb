@@ -1,21 +1,16 @@
 
-actions :install
+actions :install, :remove
 default_action :install
 
 attribute :apikey, :kind_of => String, :name_attribute => true
 
-attribute :hostname, :kind_of => String, :default => ""
-attribute :hostid, :kind_of => String, :default => ""
-attribute :wormlyhost, :kind_of => String, :default => ""
+attribute :hostname, :kind_of => String, :default => nil
+attribute :hostid, :kind_of => String, :default => nil
+attribute :endpoint, :kind_of => String, :default => "https://shm.wormly.com"
+attribute :verifyssl, :kind_of => [TrueClass, FalseClass], :default => true
 
-attribute :mysqlpassword, :kind_of => String, :default => ""
-attribute :mysqluser, :kind_of => String, :default => ""
-attribute :mysqlhost, :kind_of => String, :default => ""
-attribute :mysqlsocket, :kind_of => String, :default => ""
-attribute :mysqlport, :kind_of => String, :default => ""
-
-attribute :yumrepo, :kind_of => String, :default => "https://wormly-rpm.s3.amazonaws.com/$el/"
-attribute :keyurl, :kind_of => String, :default => "https://wormly-rpm.s3.amazonaws.com/public.gpg"
-
-attribute :aptrepo, :kind_of => String, :default => "https://wormly-deb.s3.amazonaws.com/"
-attribute :keyid, :kind_of => String, :default => "5CAB7232"
+attribute :mysqlpassword, :kind_of => String, :default => nil
+attribute :mysqluser, :kind_of => String, :default => nil
+attribute :mysqlhost, :kind_of => String, :default => nil
+attribute :mysqlsocket, :kind_of => String, :default => nil
+attribute :mysqlport, :kind_of => String, :default => nil

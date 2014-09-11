@@ -1,56 +1,52 @@
 
 action :install do
-	if platform_family?("debian")
-		apt_repository 'wormly' do
-			uri          new_resource.aptrepo
-			distribution 'all'
-			components   ['main']
-			keyserver	 'keyserver.ubuntu.com'
-			key	         new_resource.keyid
-		end
-	else
-		keyname = "RPM-GPG-KEY-wormly"
+	vars = {}
 
-		yum_key keyname do
-			url new_resource.keyurl
-		end
+	params = new_resource.to_hash
+	
+	# relies on perl script using env vars equal to uppercase resource params
+	%w{apikey hostname hostid endpoint mysqlhost mysqluser mysqlpassword mysqlsocket mysqlport verifyssl}.each do |name|
+		next if params[name.to_sym].nil?
 
-		# todo: use $releasever? is it present in all yums?
-		el = IO.read("/proc/version").include?("el6") ? "el6" : "el5"
-
-		yumrepo = new_resource.yumrepo.sub("$el", el)
-
-		yum_repository 'wormly' do
-			url yumrepo
-			repo_name 'wormly'
-			description 'Home for wormly-collectd package'
-			key keyname
-			includepkgs "wormly-collectd collectd"
-			priority 5
-		end
+		value = params[name.to_sym]
+		
+		value = value ? "true" : "false" if name == "verifyssl"
+		
+		vars[name.upcase] = value
 	end
 
-	package "wormly-collectd" do
-		notifies :run, "bash[setup]"
+	filename = Chef::Config[:file_cache_path]+"/init-shm.pl"
+
+	endpoint = new_resource.endpoint
+
+    flags = endpoint.include?(".dev") ? "--no-check-certificate" : ""
+    
+    bash "download" do
+        code "wget #{flags} #{endpoint}/go -O "+filename
+        creates filename
+    end
+
+	bash "setup collectd" do
+		code "perl "+filename
+		environment vars
+		creates "/etc/wormly/types.db"
 	end
+end
 
-	command = "wormly-collectd-setup --key #{new_resource.apikey}"
+action :remove do
+	filename = Chef::Config[:file_cache_path]+"/remove-shm.pl"
 
-	values = new_resource.to_hash
-
-	%w{hostname wormlyhost hostid mysqluser mysqlpassword mysqlhost mysqlport mysqlsocket}.each do |name|
-		value = values[name.to_sym]
-
-		next if value == "" or value == nil
-
-		command += " --#{name} #{value}"
+	endpoint = new_resource.endpoint
+    
+    flags = endpoint.include?(".dev") ? "--no-check-certificate" : ""
+	
+	bash "download" do
+		code "wget #{flags} #{endpoint}/remove -O "+filename
+		creates filename
 	end
-
-	bash "setup" do
-		code <<EOF
-#{command}
-service collectd restart
-EOF
-		action :nothing
+	
+	bash "remove" do
+		code "perl "+filename
+		only_if "which collectd"
 	end
 end
