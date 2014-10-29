@@ -29,7 +29,7 @@ action :install do
 	bash "setup collectd" do
 		code "perl "+filename
 		environment vars
-		creates "/etc/wormly/types.db"
+		not_if "which collectd && [ -e /etc/wormly/types.db ]"
 	end
 end
 
