@@ -6,11 +6,9 @@ action :install do
 	
 	# relies on perl script using env vars equal to uppercase resource params
 	%w{apikey hostname hostid endpoint mysqlhost mysqluser mysqlpassword mysqlsocket mysqlport verifyssl}.each do |name|
-		next if params[name.to_sym].nil?
-
-		value = params[name.to_sym]
-		
 		value = value ? "true" : "false" if name == "verifyssl"
+	
+		value = params[name.to_sym].to_s
 		
 		vars[name.upcase] = value
 	end
