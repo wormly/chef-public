@@ -5,7 +5,7 @@ action :install do
 	params = new_resource.to_hash
 	
 	# relies on perl script using env vars equal to uppercase resource params
-	%w{apikey hostname hostid endpoint mysqlhost mysqluser mysqlpassword mysqlsocket mysqlport verifyssl}.each do |name|
+	%w{hostname hostid endpoint mysqlhost mysqluser mysqlpassword mysqlsocket mysqlport verifyssl}.each do |name|
 		value = value ? "true" : "false" if name == "verifyssl"
 	
 		value = params[name.to_sym].to_s
@@ -25,7 +25,7 @@ action :install do
     end
 
 	bash "setup collectd" do
-		code "perl "+filename
+		code "echo #{new_resource.apikey} | perl "+filename
 		environment vars
 		not_if "which collectd && [ -e /etc/wormly/types.db ]"
 	end
