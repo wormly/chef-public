@@ -1,50 +1,42 @@
 
 action :install do
-	vars = {}
+	supportedPlatforms = %w[debian rhel]
+
+	platform = node[:platform_family]
+	
+	isSupported = supportedPlatforms.include?(platform)
+	
+	log "This recipe is not supported for #{platform} platform family. The supported families are: #{supportedPlatforms.join(', ')}" do
+		level :error
+		not_if {isSupported}
+	end
+		
+	return unless isSupported
+
+	include_recipe "wormly-public::add_#{platform}_repo"
+
+	package "wormly-collectd"
 
 	params = new_resource.to_hash
 	
-	# relies on perl script using env vars equal to uppercase resource params
-	%w{hostname hostid endpoint mysqlhost mysqluser mysqlpassword mysqlsocket mysqlport verifyssl}.each do |name|
-		value = value ? "true" : "false" if name == "verifyssl"
-	
+	# relies on wormly-collectd-install using env vars equal to uppercase resource params
+	%w{key hostname hostid wormlyhost mysqlhost mysqluser mysqlpassword mysqlsocket mysqlport verifyssl}.each do |name|
 		value = params[name.to_sym].to_s
 		
-		vars[name.upcase] = value
+		case name
+			when "verifyssl"
+				value = value ? "true" : "false"
+			else
+				next unless value
+		end
+		
+		vars[name] = value
 	end
 
-	filename = Chef::Config[:file_cache_path]+"/init-shm.pl"
+	params = vars.map{|k, v| "--#{k} #{v}"}.join(' )
 
-	endpoint = new_resource.endpoint
-
-    flags = endpoint.include?(".dev") ? "--no-check-certificate" : ""
-    
-    bash "download" do
-        code "wget #{flags} #{endpoint}/go -O "+filename
-        creates filename
-    end
-
-	bash "setup collectd" do
-		code "echo #{new_resource.apikey} | perl "+filename
-		environment vars
-		not_if "which collectd && [ -e /etc/wormly/types.db ]"
-	end
-end
-
-action :remove do
-	filename = Chef::Config[:file_cache_path]+"/remove-shm.pl"
-
-	endpoint = new_resource.endpoint
-    
-    flags = endpoint.include?(".dev") ? "--no-check-certificate" : ""
-	
-	bash "download" do
-		code "wget #{flags} #{endpoint}/remove -O "+filename
-		creates filename
-	end
-	
-	bash "remove" do
-		code "perl "+filename
-		only_if "which collectd"
+	bash "install wormly collectd" do
+		"wormly-collectd-setup #{params}"
+		creates "/usr/share/wormly"
 	end
 end
