@@ -56,12 +56,12 @@ EOF
 	
 	file "/etc/apt/sources.list.d/wormly.list" do
 		content "deb https://wormly-deb.s3.amazonaws.com all main"
-		notifies :run, "bash[apt update]"
+		notifies :run, "bash[apt update]", :immediately
 	end
 	 
 	file "/etc/apt/sources.list.d/wormly-collectd.list" do
 		content "deb https://wormly-deb.s3.amazonaws.com #{node[:lsb][:codename]} main"
-		notifies :run, "bash[apt update]"
+		notifies :run, "bash[apt update]", :immediately
 	end
 end
 
