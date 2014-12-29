@@ -35,8 +35,14 @@ action :install do
 
 	params = vars.map{|k, v| "--#{k} #{v}"}.join(' ')
 
+	command = "wormly-collectd-setup #{params}"
+
+	log "wormly setup command is: #{command}" do
+		level :debug
+	end
+
 	bash "install wormly collectd" do
-		"wormly-collectd-setup #{params}"
+		code command
 		creates "/usr/share/wormly"
 	end
 end
@@ -83,8 +89,6 @@ def add_rhel_repo
 	end
 	
 	return unless type
-	
-	puts "TYPE IS #{type}"
 	
 	file "/etc/yum.repos.d/wormly.repo" do
 		content <<EOF
