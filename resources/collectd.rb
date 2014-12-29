@@ -1,5 +1,5 @@
 
-actions :install, :remove
+actions :install
 default_action :install
 
 attribute :key, :kind_of => String, :name_attribute => true

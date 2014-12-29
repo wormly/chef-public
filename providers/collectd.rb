@@ -1,23 +1,23 @@
 
 action :install do
-	supportedPlatforms = %w[debian rhel]
-
-	platform = node[:platform_family]
-	
-	isSupported = supportedPlatforms.include?(platform)
-	
-	log "This recipe is not supported for #{platform} platform family. The supported families are: #{supportedPlatforms.join(', ')}" do
-		level :error
-		not_if {isSupported}
-	end
+	case node[:platform_family]
+		when "rhel"
+			add_rhel_repo()
+		when "debian"
+			add_debian_repo()
+		else
+			log "This recipe is not supported for #{node[:platform_family]} platform family. The supported families are: rhel, debian" do
+				level :error
+			end
 		
-	return unless isSupported
-
-	include_recipe "wormly-public::add_#{platform}_repo"
+			return
+	end
 
 	package "wormly-collectd"
 
 	params = new_resource.to_hash
+
+	vars = {}
 	
 	# relies on wormly-collectd-install using env vars equal to uppercase resource params
 	%w{key hostname hostid wormlyhost mysqlhost mysqluser mysqlpassword mysqlsocket mysqlport verifyssl}.each do |name|
@@ -33,10 +33,68 @@ action :install do
 		vars[name] = value
 	end
 
-	params = vars.map{|k, v| "--#{k} #{v}"}.join(' )
+	params = vars.map{|k, v| "--#{k} #{v}"}.join(' ')
 
 	bash "install wormly collectd" do
 		"wormly-collectd-setup #{params}"
 		creates "/usr/share/wormly"
+	end
+end
+
+def add_debian_repo
+	wormlyKeyId = "5CAB7232"
+	
+	package "apt-transport-https"
+	
+	bash "apt update" do
+		action :nothing
+		code <<EOF
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys #{wormlyKeyId}
+apt-get -y update
+EOF
+	end
+	
+	file "/etc/apt/sources.list.d/wormly.list" do
+		content "deb https://wormly-deb.s3.amazonaws.com all main"
+		notifies :run, "bash[apt update]"
+	end
+	 
+	file "/etc/apt/sources.list.d/wormly-collectd.list" do
+		content "deb https://wormly-deb.s3.amazonaws.com #{node[:lsb][:codename]} main"
+		notifies :run, "bash[apt update]"
+	end
+end
+
+def add_rhel_repo
+	remote_file "/etc/pki/rpm-gpg/RPM-GPG-KEY-wormly" do
+		source "https://wormly-rpm.s3.amazonaws.com/public.gpg"
+	end
+	
+	type = nil
+	types = %w[amzn el5 el6]
+	
+	types.each do |val|
+		type = val if node[:kernel][:release].include?(val)
+	end
+	
+	log "Could not determine linux type as one of: "+types.join(', ') do
+		level :error
+		not_if {type}
+	end
+	
+	return unless type
+	
+	puts "TYPE IS #{type}"
+	
+	file "/etc/yum.repos.d/wormly.repo" do
+		content <<EOF
+[wormly]
+name=wormly
+baseurl=https://wormly-rpm.s3.amazonaws.com/#{type}/
+enabled=1
+gpgcheck=1
+priority=8
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-wormly
+EOF
 	end
 end
