@@ -41,9 +41,11 @@ action :install do
 		level :debug
 	end
 
+	flag = "/var/lib/wormly-collectd-installed"
+
 	bash "install wormly collectd" do
-		code command
-		creates "/usr/share/wormly"
+		code command + " && touch #{flag}"
+		creates flag
 	end
 end
 
