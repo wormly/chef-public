@@ -21,7 +21,7 @@ action :install do
 	
 	# relies on wormly-collectd-install using env vars equal to uppercase resource params
 	%w{key hostname hostid wormlyhost mysqlhost mysqluser mysqlpassword mysqlsocket mysqlport verifyssl}.each do |name|
-		value = params[name.to_sym].to_s
+		value = params[name.to_sym]
 		
 		case name
 			when "verifyssl"
