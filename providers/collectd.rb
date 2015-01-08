@@ -65,19 +65,19 @@ EOF
 	end
 	
 	file "/etc/apt/sources.list.d/wormly.list" do
-		content "deb https://wormly-deb.s3.amazonaws.com all main"
+		content "deb https://#{new_resource.debbucket}.s3.amazonaws.com all main"
 		notifies :run, "bash[apt update]", :immediately
 	end
 	 
 	file "/etc/apt/sources.list.d/wormly-collectd.list" do
-		content "deb https://wormly-deb.s3.amazonaws.com #{node[:lsb][:codename]} main"
+		content "deb https://#{new_resource.debbucket}.s3.amazonaws.com #{node[:lsb][:codename]} main"
 		notifies :run, "bash[apt update]", :immediately
 	end
 end
 
 def add_rhel_repo
 	remote_file "/etc/pki/rpm-gpg/RPM-GPG-KEY-wormly" do
-		source "https://wormly-rpm.s3.amazonaws.com/public.gpg"
+		source "https://#{new_resource.rpmbucket}.s3.amazonaws.com/public.gpg"
 	end
 	
 	type = nil
@@ -98,7 +98,7 @@ def add_rhel_repo
 		content <<EOF
 [wormly]
 name=wormly
-baseurl=https://wormly-rpm.s3.amazonaws.com/#{type}/
+baseurl=https://#{new_resource.rpmbucket}.s3.amazonaws.com/#{type}/
 enabled=1
 gpgcheck=1
 priority=8
