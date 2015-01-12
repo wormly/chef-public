@@ -15,13 +15,12 @@ action :install do
 
 	package "wormly-collectd"
 
-	params = new_resource.to_hash
-
 	vars = {}
-	
+
 	# relies on wormly-collectd-install using env vars equal to uppercase resource params
 	%w{key hostname hostid wormlyhost mysqlhost mysqluser mysqlpassword mysqlsocket mysqlport verifyssl}.each do |name|
-		value = params[name.to_sym]
+		# http://cookbooks.opscode.com/cookbooks/resource_masher/versions/0.10.0#limitations-of-chef-default-functionality
+		value = new_resource.send name
 		
 		case name
 			when "verifyssl"
