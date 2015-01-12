@@ -37,7 +37,7 @@ action :install do
 
 	command = "wormly-collectd-setup #{params}"
 
-	keyless = command.gsub(vars["key"], "[apikey_hidden]")
+	keyless = command.gsub(vars["key"], "[apikey_hidden]") if vars.has_key?("key")
 
 	log "wormly setup command is: #{keyless}" do
 		level :debug
