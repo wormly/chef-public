@@ -13,7 +13,7 @@ action :install do
 			return
 	end
 
-	package "wormly-collectd"
+	package "collectd-wormly-config"
 
 	vars = {}
 
@@ -34,7 +34,7 @@ action :install do
 
 	params = vars.map{|k, v| "--#{k} #{v}"}.join(' ')
 
-	command = "wormly-collectd-setup #{params}"
+	command = "collectd-wormly-setup #{params}"
 
 	keyless = command.gsub(vars["key"], "[apikey_hidden]") if vars.has_key?("key")
 
@@ -68,7 +68,7 @@ EOF
 		notifies :run, "bash[apt update]", :immediately
 	end
 	 
-	file "/etc/apt/sources.list.d/wormly-collectd.list" do
+	file "/etc/apt/sources.list.d/collectd-wormly.list" do
 		content "deb https://#{new_resource.debbucket}.s3.amazonaws.com #{node[:lsb][:codename]} main"
 		notifies :run, "bash[apt update]", :immediately
 	end
