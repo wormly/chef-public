@@ -13,6 +13,10 @@ action :install do
 			return
 	end
 
+	package "wormly-collectd" do
+		action :remove
+	end
+	
 	package "collectd-wormly-config"
 
 	vars = {}
