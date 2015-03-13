@@ -4,8 +4,7 @@ default_action :install
 
 attribute :key, :kind_of => String, :name_attribute => true
 
-attribute :hostname, :kind_of => String, :default => nil
-attribute :hostid, :kind_of => String, :default => nil
+attribute :hostid, :kind_of => [String, Integer], :default => nil
 attribute :wormlyhost, :kind_of => String, :default => "https://shm.wormly.com"
 attribute :verifyssl, :kind_of => [TrueClass, FalseClass], :default => true
 

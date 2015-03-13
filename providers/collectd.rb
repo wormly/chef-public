@@ -1,4 +1,6 @@
 
+require 'digest'
+
 action :install do
 	case node[:platform_family]
 		when "rhel"
@@ -22,7 +24,7 @@ action :install do
 	vars = {}
 
 	# relies on wormly-collectd-install using env vars equal to uppercase resource params
-	%w{key hostname hostid wormlyhost mysqlhost mysqluser mysqlpassword mysqlsocket mysqlport verifyssl}.each do |name|
+	%w{key hostid wormlyhost mysqlhost mysqluser mysqlpassword mysqlsocket mysqlport verifyssl}.each do |name|
 		# http://cookbooks.opscode.com/cookbooks/resource_masher/versions/0.10.0#limitations-of-chef-default-functionality
 		value = new_resource.send name
 		
@@ -40,17 +42,20 @@ action :install do
 
 	command = "collectd-wormly-setup #{params}"
 
-	keyless = command.gsub(vars["key"], "[apikey_hidden]") if vars.has_key?("key")
+	keyless = command
+	keyless = keyless.gsub(vars["key"], "[apikey_hidden]") if vars.has_key?("key")
+	keyless = keyless.gsub(vars["mysqlpassword"], "[mysqlpassword_hidden]") if vars.has_key?("mysqlpassword")
 
 	log "wormly setup command is: #{keyless}" do
 		level :debug
 	end
 
+	hash = Digest::SHA256.hexdigest command
 	flag = "/var/lib/wormly-collectd-installed"
 
 	bash "install wormly collectd" do
-		code command + " && touch #{flag}"
-		creates flag
+		code command + " && echo #{hash} > #{flag}"
+		not_if "grep -qs #{hash} #{flag}"
 	end
 end
 
