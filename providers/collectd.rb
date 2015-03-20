@@ -60,14 +60,16 @@ action :install do
 end
 
 def add_debian_repo
-	wormlyKeyId = "5CAB7232"
-	
 	package "apt-transport-https"
 	
 	bash "apt update" do
 		action :nothing
 		code <<EOF
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys #{wormlyKeyId}
+fetch() {
+ wget -q $1 -O- || curl -s $1
+}
+
+fetch https://#{new_resource.debbucket}.s3.amazonaws.com/pubkey.gpg | apt-key add - 
 apt-get -y update
 EOF
 	end
