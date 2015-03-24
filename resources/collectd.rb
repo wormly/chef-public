@@ -13,6 +13,7 @@ attribute :mysqluser, :kind_of => String, :default => nil
 attribute :mysqlhost, :kind_of => String, :default => nil
 attribute :mysqlsocket, :kind_of => String, :default => nil
 attribute :mysqlport, :kind_of => String, :default => nil
+attribute :nodbi, :kind_of => [TrueClass, FalseClass], :default => false
 
 attribute :debbucket, :kind_of => String, :default => "wormly-deb"
 attribute :rpmbucket, :kind_of => String, :default => "wormly-rpm"

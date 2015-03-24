@@ -39,6 +39,7 @@ action :install do
 	end
 
 	params = vars.map{|k, v| "--#{k} #{v}"}.join(' ')
+	params += " --nodbi" if new_resource.nodbi
 
 	command = "collectd-wormly-setup #{params}"
 
