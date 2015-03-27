@@ -19,7 +19,9 @@ action :install do
 		action :remove
 	end
 	
-	package "collectd-wormly-config"
+	package "collectd-wormly-config" do
+		action :upgrade
+	end
 
 	vars = {}
 
