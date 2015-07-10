@@ -1,9 +1,4 @@
-wormly_public_collectd "install wormly " do
+wormly_public_collectd "install collectd" do
 	key "myapikey"
-	hostname "some-hostname"
-	hostid "1111111"
-	wormlyhost "http://localhost"
-	verifyssl false
-	mysqlpassword "password"
-	mysqluser "root"
+	hostname "my test host"
 end
