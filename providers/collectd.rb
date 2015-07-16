@@ -124,34 +124,59 @@ EOF
 end
 
 def add_rhel_repo
-	remote_file "/etc/pki/rpm-gpg/RPM-GPG-KEY-wormly" do
-		source "https://#{new_resource.rpmbucket}.s3.amazonaws.com/public.gpg"
-	end
-	
-	type = nil
-	types = %w[amzn el5 el6]
-	
-	types.each do |val|
-		type = val if node[:kernel][:release].include?(val)
-	end
-	
-	log "Could not determine linux type as one of: "+types.join(', ') do
-		level :error
-		not_if {type}
-	end
-	
-	return unless type
-	
-	file "/etc/yum.repos.d/wormly.repo" do
-		content <<EOF
+
+	bash "add yum repo" do
+		action :nothing
+		code <<EOF
+# Discover which RHEL release (or compatible distro) we're running on:
+ID=
+types="el5 el6 el7 amzn"
+
+function findid() {
+	for val in $types; do
+	grep -q $val <<< "$1" && ID=$val && return 0;
+done
+
+return 1
+}
+
+function findrelease() {
+	filename=$1
+
+	[ ! -e $filename ] && return 1
+
+	for val in $types; do
+	[[ $val != "el"* ]] && continue;
+	num=$( cut -c3- <<< $val )
+	grep -q "release $num" $filename && ID=$val && return 0;
+	done
+
+	return 1
+}
+
+findid "$(</proc/version)" || \
+findid "`rpm --showrc | grep "\bdist\b"`" || \
+findrelease /etc/redhat-release || \
+findrelease /etc/system-release
+
+[ -z "$ID" ] && echo "Could not determine your GNU/Linux distribution.  We support these ones: $types" && exit 1;
+
+cat >/etc/yum.repos.d/wormly.repo <<END
 [wormly]
 name=wormly
-baseurl=https://#{new_resource.rpmbucket}.s3.amazonaws.com/#{type}/
+baseurl=https://#{new_resource.rpmbucket}.s3.amazonaws.com/$ID/
 enabled=1
 gpgcheck=1
 priority=8
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-wormly
+END
+
 EOF
+	end
+
+	remote_file "/etc/pki/rpm-gpg/RPM-GPG-KEY-wormly" do
+		source "https://#{new_resource.rpmbucket}.s3.amazonaws.com/public.gpg"
+		notifies :run, "bash[add yum repo]", :immediately
 	end
 end
 
